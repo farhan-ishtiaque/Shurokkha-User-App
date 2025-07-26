@@ -1,8 +1,9 @@
 import 'dart:io';
-
+import 'api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shurokkha_app/login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -27,6 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _fatherController = TextEditingController();
   final _motherController = TextEditingController();
   final _addressController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   // Other state
   DateTime? _selectedDob;
@@ -148,7 +150,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 const SizedBox(height: 24),
 
-                /// ---------- BASIC INFO ----------
+                // ---------- BASIC INFO ----------
                 _nameField(_firstnameController, 'First Name'),
                 const SizedBox(height: 16),
                 _nameField(_lastnameController, 'Last Name'),
@@ -157,6 +159,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   _usernameController,
                   'Username',
                   error: 'Please enter a username',
+                ),
+                const SizedBox(height: 16),
+                _plainField(
+                  _phoneController,
+                  'Phone Number',
+                  Icons.phone_outlined,
                 ),
                 const SizedBox(height: 16),
                 _emailField(),
@@ -352,7 +360,7 @@ class _RegisterPageState extends State<RegisterPage> {
   );
 
   /// ---------------- Submit ----------------
-  void _handleRegister() {
+  void _handleRegister() async {
     if (_formKey.currentState?.validate() ?? false) {
       if (_nidFront == null || _nidBack == null || _selfie == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -360,28 +368,42 @@ class _RegisterPageState extends State<RegisterPage> {
         );
         return;
       }
+
       _formKey.currentState?.save();
 
-      // In a real app, now bundle all controllers + images → POST to API
-      debugPrint('Registering user: ${_usernameController.text}');
-      debugPrint('Email: ${_emailController.text}');
-      debugPrint(
-        'Name: ${_firstnameController.text} ${_lastnameController.text}',
-      );
-      debugPrint('Father: ${_fatherController.text}');
-      debugPrint('Mother: ${_motherController.text}');
-      debugPrint('Address: ${_addressController.text}');
-      debugPrint('Password: ${_passwordController.text}');
-      debugPrint('Confirm Password: ${_confirmController.text}');
-      debugPrint('Username: ${_usernameController.text}');
-      debugPrint('DOB: $_selectedDob');
-      debugPrint('NID #: ${_nidNumberController.text}');
-      debugPrint(
-        'Images: '
-        'front=${_nidFront?.name}, '
-        'back=${_nidBack?.name}, '
-        'selfie=${_selfie?.name}',
-      );
+      try {
+        await registerUser(
+          firstName: _firstnameController.text.trim(),
+          lastName: _lastnameController.text.trim(),
+          username: _usernameController.text.trim(),
+          email: _emailController.text.trim(),
+          phone: _phoneController.text.trim(),
+          dob: DateFormat('yyyy-MM-dd').format(_selectedDob!), // convert format
+          nidNumber: _nidNumberController.text.trim(),
+          father: _fatherController.text.trim(),
+          mother: _motherController.text.trim(),
+          address: _addressController.text.trim(),
+          nidFront: File(_nidFront!.path),
+          nidBack: File(_nidBack!.path),
+          selfie: File(_selfie!.path),
+          password: _passwordController.text.trim(),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration successful!')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+
+        // Optionally navigate to another page
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
+      }
     }
   }
 }

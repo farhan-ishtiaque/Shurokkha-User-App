@@ -7,7 +7,7 @@ class Homepage extends StatelessWidget {
     {'title': 'Police', 'image': 'assets/images/police_logo.png'},
     {'title': 'FireService', 'image': 'assets/images/firedept_logo.png'},
     {'title': 'Medical', 'image': 'assets/images/medical_logo.png'},
-    {'title': 'Logout', 'image': 'assets/images/shurokkha_logo.png'},
+    {'title': 'Contact Operator', 'image': 'assets/images/operator.png'},
   ];
 
   @override
@@ -22,7 +22,8 @@ class Homepage extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         centerTitle: true,
-        elevation: 6,
+        elevation: 4,
+        shadowColor: Colors.grey,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
@@ -33,7 +34,7 @@ class Homepage extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.pink),
+              decoration: const BoxDecoration(color: Colors.pinkAccent),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -41,7 +42,7 @@ class Homepage extends StatelessWidget {
                   CircleAvatar(
                     radius: 32,
                     backgroundImage: AssetImage(
-                      'assets/images/profile_pic.png',
+                      'assets/images/profile_pic.jpeg',
                     ), // or NetworkImage(...)
                     backgroundColor: Colors.white,
                   ),
@@ -54,7 +55,7 @@ class Homepage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
-                          'Username: johndoe123',
+                          'Username: farhan123',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -62,11 +63,11 @@ class Homepage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Name: John Doe',
+                          'Name: Farhan',
                           style: TextStyle(color: Colors.white, fontSize: 14),
                         ),
                         Text(
-                          'Email: john@example.com',
+                          'Email: farhan@gmail.com',
                           style: TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
@@ -105,10 +106,10 @@ class Homepage extends StatelessWidget {
           // Add your action here
           debugPrint('Floating Action Button Pressed');
         },
-        child: const Icon(Icons.add_alert_outlined),
         backgroundColor: const Color.fromARGB(255, 255, 0, 85),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        child: const Icon(Icons.add_alert_outlined),
       ),
       body: GridView.count(
         crossAxisCount: 2,

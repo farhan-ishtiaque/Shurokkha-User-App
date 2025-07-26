@@ -35,8 +35,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       //home: RegisterPage(),
-      //home: LoginPage(),
-      home: Homepage(),
+      home: LoginPage(),
+      //home: Homepage(),
     );
   }
 }

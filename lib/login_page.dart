@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shurokkha_app/register_page.dart';
+import 'api_service.dart';
+import 'homepage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,11 +15,27 @@ class _LoginPageState extends State<LoginPage> {
   final _userIdController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implement authentication logic with numeric user ID and password.
-      debugPrint('User ID: ${_userIdController.text}');
-      debugPrint('Password: ${_passwordController.text}');
+      final username = _userIdController.text.trim();
+      final password = _passwordController.text;
+
+      final success = await loginUser(username, password);
+
+      if (success) {
+        // Navigate to home or dashboard
+        if (!mounted) return;
+        Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => const Homepage()),
+
+        ); // or your actual screen
+      } else {
+        // Show error
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid username or password')),
+        );
+      }
     }
   }
 
@@ -133,9 +151,12 @@ class _LoginPageState extends State<LoginPage> {
               // Create account link
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => const RegisterPage(),
-                  )); 
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterPage(),
+                    ),
+                  );
                   debugPrint('Create Account tapped!');
                 },
                 child: const Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shurokkha_app/Settings/change_personal_info.dart';
+import 'package:shurokkha_app/Settings/update_emergency_info.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -43,7 +44,7 @@ class _HomepageState extends State<Homepage> {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 29, 56, 114),
+                color: Color.fromARGB(255, 138, 94, 135),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -84,8 +85,8 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.home, color: Colors.black),
-              title: const Text('Home'),
+              leading: const Icon(Icons.person_2, color: Colors.black),
+              title: const Text('Profile'),
               onTap: () => Navigator.pop(context),
             ),
             ExpansionTile(
@@ -115,7 +116,14 @@ class _HomepageState extends State<Homepage> {
                 ),
                 ListTile(
                   title: const Text('Update Emergency Info'),
-                  onTap: () => debugPrint('Update Emergency Info tapped'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UpdateEmergencyInfoScreen(),
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
                   title: const Text('Set Home Address'),

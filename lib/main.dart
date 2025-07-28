@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shurokkha_app/Emergency_Forms/fire_service_form.dart';
+import 'package:shurokkha_app/Settings/set_home_address';
+import 'package:shurokkha_app/Settings/update_emergency_info.dart';
 import 'package:shurokkha_app/homepage.dart';
 import 'package:shurokkha_app/register_page.dart';
 import 'package:shurokkha_app/login_page.dart';
@@ -38,7 +40,9 @@ class MyApp extends StatelessWidget {
 
       //home: RegisterPage(),
       //home: LoginPage(),
-      home: Homepage(),
+      //home: Homepage(),
+      home: SetHomeAddressScreen(),
+      //home: UpdateEmergencyInfoScreen(),
       //home: FireEmergencyForm(),
       //home: ChangePersonalInfoScreen(currentPhone: '01700000000',currentEmail:'farhan@gmail.com'),
     );

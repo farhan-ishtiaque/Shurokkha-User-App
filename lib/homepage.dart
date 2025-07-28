@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shurokkha_app/Settings/change_personal_info.dart';
 
-class Homepage extends StatelessWidget {
+class Homepage extends StatefulWidget {
   const Homepage({super.key});
 
   static final _cardItems = [
@@ -9,6 +10,13 @@ class Homepage extends StatelessWidget {
     {'title': 'Medical', 'image': 'assets/images/medical_logo.png'},
     {'title': 'Contact Operator', 'image': 'assets/images/operator.png'},
   ];
+
+  @override
+  State<Homepage> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  bool isSettingsExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -34,21 +42,20 @@ class Homepage extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.pinkAccent),
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 29, 56, 114),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // ────────────── Profile Picture ──────────────
                   CircleAvatar(
                     radius: 32,
                     backgroundImage: AssetImage(
                       'assets/images/profile_pic.jpeg',
-                    ), // or NetworkImage(...)
+                    ),
                     backgroundColor: Colors.white,
                   ),
                   const SizedBox(width: 16),
-
-                  // ────────────── User Info ──────────────
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -79,33 +86,60 @@ class Homepage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.home, color: Colors.black),
               title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-              },
+              onTap: () => Navigator.pop(context),
             ),
-            ListTile(
+            ExpansionTile(
               leading: const Icon(Icons.settings, color: Colors.black),
               title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
+              trailing: Icon(
+                isSettingsExpanded ? Icons.expand_less : Icons.expand_more,
+                color: Colors.black,
+              ),
+              onExpansionChanged: (expanded) {
+                setState(() => isSettingsExpanded = expanded);
               },
+              children: [
+                ListTile(
+                  title: const Text('Change Personal Info'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangePersonalInfoScreen(
+                          currentPhone: '01700000000',
+                          currentEmail: 'farhan@gmail.com',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: const Text('Update Emergency Info'),
+                  onTap: () => debugPrint('Update Emergency Info tapped'),
+                ),
+                ListTile(
+                  title: const Text('Set Home Address'),
+                  onTap: () => debugPrint('Set Home Address tapped'),
+                ),
+                ListTile(
+                  title: const Text('Privacy & Security'),
+                  onTap: () => debugPrint('Privacy & Security tapped'),
+                ),
+              ],
             ),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text('Logout'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // Add logout functionality here
+                Navigator.pop(context);
+                debugPrint('Logout tapped');
               },
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add your action here
-          debugPrint('Floating Action Button Pressed');
-        },
+        onPressed: () => debugPrint('Floating Action Button Pressed'),
         backgroundColor: const Color.fromARGB(255, 255, 0, 85),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
@@ -118,8 +152,8 @@ class Homepage extends StatelessWidget {
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         padding: const EdgeInsets.all(16),
-        children: List.generate(_cardItems.length, (index) {
-          final item = _cardItems[index];
+        children: List.generate(Homepage._cardItems.length, (index) {
+          final item = Homepage._cardItems[index];
           return InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () => debugPrint('Tapped: ${item['title']}'),

@@ -3,15 +3,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class FireServiceRequestScreen extends StatefulWidget {
-  const FireServiceRequestScreen({super.key});
+class MedicalServiceRequestScreen extends StatefulWidget {
+  const MedicalServiceRequestScreen({super.key});
 
   @override
-  State<FireServiceRequestScreen> createState() =>
-      _FireServiceRequestScreenState();
+  State<MedicalServiceRequestScreen> createState() => _MedicalServiceRequestScreenState();
 }
 
-class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
+class _MedicalServiceRequestScreenState extends State<MedicalServiceRequestScreen> {
   bool isLoading = true;
   bool useDifferentLocation = false;
 
@@ -20,8 +19,7 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
   GoogleMapController? _mapController;
 
   final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController additionalInfoController =
-      TextEditingController();
+  final TextEditingController additionalInfoController = TextEditingController();
 
   @override
   void initState() {
@@ -73,7 +71,7 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
         ? additionalInfo
         : homeAddress!['address'];
 
-    print('--- FIRE REQUEST ---');
+    print('--- MEDICAL REQUEST ---');
     print('Description: $description');
     print('Location: $address');
     print('LatLng: ${location.latitude}, ${location.longitude}');
@@ -83,13 +81,13 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Colors.pink)),
+        body: Center(child: CircularProgressIndicator(color: Colors.teal)),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Fire Service Request"),
+        title: const Text("Medical Emergency Request"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         centerTitle: true,
@@ -109,14 +107,14 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Incident Description",
+              "Describe Medical Emergency",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: descriptionController,
               decoration: const InputDecoration(
-                hintText: "Describe the fire emergency or required service...",
+                hintText: "Describe the emergency or required assistance...",
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,
@@ -148,9 +146,7 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(homeAddress!['address']),
-                  Text(
-                    "Lat: ${homeAddress!['latitude']}, Lng: ${homeAddress!['longitude']}",
-                  ),
+                  Text("Lat: ${homeAddress!['latitude']}, Lng: ${homeAddress!['longitude']}",),
                 ],
               ),
             if (useDifferentLocation)
@@ -171,8 +167,7 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
                     child: selectedLocation == null
                         ? const Center(child: CircularProgressIndicator())
                         : GoogleMap(
-                            onMapCreated: (controller) =>
-                                _mapController = controller,
+                            onMapCreated: (controller) => _mapController = controller,
                             initialCameraPosition: CameraPosition(
                               target: selectedLocation!,
                               zoom: 16,
@@ -205,10 +200,10 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
               height: 48,
               child: ElevatedButton.icon(
                 onPressed: _submitRequest,
-                icon: const Icon(Icons.local_fire_department),
-                label: const Text("Submit Fire Report"),
+                icon: const Icon(Icons.medical_services),
+                label: const Text("Submit Medical Report"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
+                  backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

@@ -1,10 +1,7 @@
-import io.flutter.embedding.android.FlutterFragmentActivity
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugins.googlemaps.GoogleMapsPlugin
+package com.Shurokkha.shurokkha_app
 
-class MainActivity: FlutterFragmentActivity() {
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-        GoogleMapsPlugin.registerWith(flutterEngine)
-    }
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity() {
+    // No need to override anything here unless using plugins manually
 }

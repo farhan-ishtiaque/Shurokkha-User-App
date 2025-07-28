@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:latlong2/latlong.dart';
 
 class SetHomeAddressScreen extends StatefulWidget {
   const SetHomeAddressScreen({super.key});
@@ -16,6 +15,7 @@ class SetHomeAddressScreen extends StatefulWidget {
 class _SetHomeAddressScreenState extends State<SetHomeAddressScreen> {
   final TextEditingController fullAddressController = TextEditingController();
   LatLng? selectedLocation;
+  GoogleMapController? _mapController;
 
   @override
   void initState() {
@@ -75,8 +75,11 @@ class _SetHomeAddressScreenState extends State<SetHomeAddressScreen> {
     }
   }
 
-  void _onMapTapped(TapPosition tapPosition, LatLng latLng) {
-    setState(() => selectedLocation = latLng);
+  void _onMapTapped(LatLng latLng) {
+    setState(() {
+      selectedLocation = latLng;
+    });
+    _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
   }
 
   @override
@@ -94,6 +97,10 @@ class _SetHomeAddressScreenState extends State<SetHomeAddressScreen> {
         shadowColor: Colors.grey,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_outlined),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: Column(
@@ -142,30 +149,21 @@ class _SetHomeAddressScreenState extends State<SetHomeAddressScreen> {
                 borderRadius: BorderRadius.circular(20),
                 child: selectedLocation == null
                     ? const Center(child: CircularProgressIndicator())
-                    : FlutterMap(
-                        options: MapOptions(
-                          center: selectedLocation,
+                    : GoogleMap(
+                        onMapCreated: (controller) => _mapController = controller,
+                        initialCameraPosition: CameraPosition(
+                          target: selectedLocation!,
                           zoom: 16,
-                          onTap: _onMapTapped,
                         ),
-                        children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                            userAgentPackageName: 'com.Shurokkha.shurokkha_app',
+                        markers: {
+                          Marker(
+                            markerId: const MarkerId("selected_location"),
+                            position: selectedLocation!,
                           ),
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                width: 40,
-                                height: 40,
-                                point: selectedLocation!,
-                                child: const Icon(Icons.location_pin,
-                                    size: 40, color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ],
+                        },
+                        onTap: _onMapTapped,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
                       ),
               ),
             ),
@@ -188,7 +186,19 @@ class _SetHomeAddressScreenState extends State<SetHomeAddressScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: _saveHomeAddress,
+                  onPressed: () async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('auth_token');
+
+  print("Token: $token");
+  print("Address: ${fullAddressController.text}");
+  print("LatLng: $selectedLocation");
+
+  _saveHomeAddress();
+},
+
+                  
+
                 ),
               ),
             ),

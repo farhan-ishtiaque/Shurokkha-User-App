@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shurokkha_app/Settings/change_personal_info.dart';
 import 'package:shurokkha_app/Settings/update_emergency_info.dart';
+import 'package:shurokkha_app/Settings/set_home_address.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -18,6 +20,26 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   bool isSettingsExpanded = false;
+
+  void _callOperator() async {
+    final Uri url = Uri(scheme: 'tel', path: '999');
+    try {
+      final bool launched = await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch dialer')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error launching dialer: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error occurred while launching dialer')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,11 +149,14 @@ class _HomepageState extends State<Homepage> {
                 ),
                 ListTile(
                   title: const Text('Set Home Address'),
-                  onTap: () => debugPrint('Set Home Address tapped'),
-                ),
-                ListTile(
-                  title: const Text('Privacy & Security'),
-                  onTap: () => debugPrint('Privacy & Security tapped'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SetHomeAddressScreen(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -164,7 +189,12 @@ class _HomepageState extends State<Homepage> {
           final item = Homepage._cardItems[index];
           return InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: () => debugPrint('Tapped: ${item['title']}'),
+            onTap: () {
+              debugPrint('Tapped: ${item['title']}');
+              if (item['title'] == 'Contact Operator') {
+                _callOperator();
+              }
+            },
             child: Card(
               color: const Color.fromARGB(255, 255, 215, 230),
               elevation: 4,

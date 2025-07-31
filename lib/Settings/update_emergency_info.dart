@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shurokkha_app/Api_Services/api_service.dart';
 
 class UpdateEmergencyInfoScreen extends StatefulWidget {
   const UpdateEmergencyInfoScreen({super.key});
@@ -20,6 +21,27 @@ class _UpdateEmergencyInfoScreenState extends State<UpdateEmergencyInfoScreen> {
       TextEditingController();
   final TextEditingController allergiesController = TextEditingController();
 
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEmergencyInfo();
+  }
+
+  Future<void> _loadEmergencyInfo() async {
+    final info = await getEmergencyInfo();
+    if (info != null) {
+      contactControllers[0].text = info['emergency_contact1'] ?? '';
+      contactControllers[1].text = info['emergency_contact2'] ?? '';
+      contactControllers[2].text = info['emergency_contact3'] ?? '';
+      bloodGroupController.text = info['blood_group'] ?? '';
+      healthConditionsController.text = info['health_conditions'] ?? '';
+      allergiesController.text = info['allergies'] ?? '';
+    }
+    setState(() => _isLoading = false);
+  }
+
   @override
   void dispose() {
     for (var controller in contactControllers) {
@@ -31,25 +53,29 @@ class _UpdateEmergencyInfoScreenState extends State<UpdateEmergencyInfoScreen> {
     super.dispose();
   }
 
-  void _saveEmergencyInfo() {
+  void _saveEmergencyInfo() async {
     if (_formKey.currentState!.validate()) {
-      final emergencyInfo = {
-        'contacts': contactControllers
-            .map((c) => c.text)
-            .where((c) => c.isNotEmpty)
-            .toList(),
-        'blood_group': bloodGroupController.text,
-        'health_conditions': healthConditionsController.text,
-        'allergies': allergiesController.text,
-      };
+      try {
+        await updateEmergencyInfo(
+          contact1: contactControllers[0].text,
+          contact2: contactControllers[1].text,
+          contact3: contactControllers[2].text,
+          bloodGroup: bloodGroupController.text,
+          healthConditions: healthConditionsController.text,
+          allergies: allergiesController.text,
+        );
 
-      debugPrint('Saved Emergency Info: $emergencyInfo');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Emergency information saved successfully!"),
-        ),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Emergency information saved successfully!"),
+          ),
+        );
+      } catch (e) {
+        print("Error: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to save emergency info")),
+        );
+      }
     }
   }
 
@@ -74,82 +100,90 @@ class _UpdateEmergencyInfoScreenState extends State<UpdateEmergencyInfoScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              const Text(
-                "Emergency Contacts (up to 3)",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ...List.generate(
-                3,
-                (index) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: TextFormField(
-                    controller: contactControllers[index],
-                    keyboardType: TextInputType.phone,
-                    decoration: _buildDecoration(
-                      "Contact ${index + 1}",
-                      Icons.phone,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    const Text(
+                      "Emergency Contacts (up to 3)",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    validator: (v) {
-                      if (index == 0 && (v == null || v.isEmpty)) {
-                        return 'At least one contact is required';
-                      }
-                      return null;
-                    },
-                  ),
+                    const SizedBox(height: 8),
+                    ...List.generate(
+                      3,
+                      (index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: TextFormField(
+                          controller: contactControllers[index],
+                          keyboardType: TextInputType.phone,
+                          decoration: _buildDecoration(
+                            "Contact ${index + 1}",
+                            Icons.phone,
+                          ),
+                          validator: (v) {
+                            if (index == 0 && (v == null || v.isEmpty)) {
+                              return 'At least one contact is required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // ─── Blood Group ───────────────────────
+                    TextFormField(
+                      controller: bloodGroupController,
+                      decoration: _buildDecoration(
+                        "Blood Group",
+                        Icons.bloodtype,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ─── Health Conditions ─────────────────
+                    TextFormField(
+                      controller: healthConditionsController,
+                      decoration: _buildDecoration(
+                        "Health Conditions",
+                        Icons.health_and_safety,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ─── Allergies ─────────────────────────
+                    TextFormField(
+                      controller: allergiesController,
+                      decoration: _buildDecoration(
+                        "Allergies",
+                        Icons.warning_amber,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // ─── Submit Button ─────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.save),
+                        label: const Text('Save Emergency Info'),
+                        onPressed: _saveEmergencyInfo,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.pinkAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-
-              // ─── Blood Group ───────────────────────
-              TextFormField(
-                controller: bloodGroupController,
-                decoration: _buildDecoration("Blood Group", Icons.bloodtype),
-              ),
-              const SizedBox(height: 12),
-
-              // ─── Health Conditions ─────────────────
-              TextFormField(
-                controller: healthConditionsController,
-                decoration: _buildDecoration(
-                  "Health Conditions",
-                  Icons.health_and_safety,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // ─── Allergies ─────────────────────────
-              TextFormField(
-                controller: allergiesController,
-                decoration: _buildDecoration("Allergies", Icons.warning_amber),
-              ),
-
-              const SizedBox(height: 24),
-
-              // ─── Submit Button ─────────────────────
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save Emergency Info'),
-                  onPressed: _saveEmergencyInfo,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pinkAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

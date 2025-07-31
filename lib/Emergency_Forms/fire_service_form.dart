@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shurokkha_app/Api_Services/api_service.dart';
 
 class FireServiceRequestScreen extends StatefulWidget {
   const FireServiceRequestScreen({super.key});
@@ -14,7 +15,6 @@ class FireServiceRequestScreen extends StatefulWidget {
 class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
   bool isLoading = true;
   bool useDifferentLocation = false;
-
   Map<String, dynamic>? homeAddress;
   LatLng? selectedLocation;
   GoogleMapController? _mapController;
@@ -26,15 +26,26 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 1), () {
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final profile = await getUserProfile();
+    if (profile != null) {
       setState(() {
         homeAddress = {
-          'address': 'House 10, Road 5, Banani, Dhaka',
-          'latitude': 23.7806,
-          'longitude': 90.4193,
+          'address': profile['address'] ?? 'No address set',
+          'latitude': profile['latitude'] ?? 0.0,
+          'longitude': profile['longitude'] ?? 0.0,
         };
-        isLoading = false;
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to load user profile")),
+      );
+    }
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -63,20 +74,42 @@ class _FireServiceRequestScreenState extends State<FireServiceRequestScreen> {
     _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
   }
 
-  void _submitRequest() {
+  void _submitRequest() async {
     final description = descriptionController.text.trim();
     final additionalInfo = additionalInfoController.text.trim();
+
+    if (description.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Description is required")));
+      return;
+    }
+
     final LatLng location = useDifferentLocation
         ? selectedLocation!
         : LatLng(homeAddress!['latitude'], homeAddress!['longitude']);
+
     final String address = useDifferentLocation
         ? additionalInfo
         : homeAddress!['address'];
 
-    print('--- FIRE REQUEST ---');
-    print('Description: $description');
-    print('Location: $address');
-    print('LatLng: ${location.latitude}, ${location.longitude}');
+    final bool success = await submitFireReport(
+      description: description,
+      address: address,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    );
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Fire report submitted successfully")),
+      );
+      Navigator.pop(context); // Or navigate to confirmation screen
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to submit report")));
+    }
   }
 
   @override

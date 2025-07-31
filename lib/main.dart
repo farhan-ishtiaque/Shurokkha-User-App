@@ -7,6 +7,7 @@ import 'package:shurokkha_app/register_page.dart';
 import 'package:shurokkha_app/login_page.dart';
 import 'package:shurokkha_app/Settings/change_personal_info.dart';
 import 'package:shurokkha_app/Emergency_Forms/medical_service_form.dart';
+import 'package:shurokkha_app/Settings/profile_page.dart';
 
 main() {
   var app =
@@ -40,10 +41,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       //home: RegisterPage(),
-      //home: LoginPage(),
+      home: LoginPage(),
       //home: Homepage(),
+      //home: const ProfilePage(),
       //home: FireServiceRequestScreen(),
-      home: MedicalServiceRequestScreen(),
+      //home: MedicalServiceRequestScreen(),
       //home: SetHomeAddressScreen(),
       //home: UpdateEmergencyInfoScreen(),
       //home: FireEmergencyForm(),

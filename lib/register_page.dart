@@ -25,15 +25,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   final _nidNumberController = TextEditingController();
-  final _fatherController = TextEditingController();
-  final _motherController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
 
   // Other state
   DateTime? _selectedDob;
   XFile? _nidFront;
-  XFile? _nidBack;
   XFile? _selfie;
 
   @override
@@ -46,8 +43,6 @@ class _RegisterPageState extends State<RegisterPage> {
     _passwordController.dispose();
     _confirmController.dispose();
     _nidNumberController.dispose();
-    _fatherController.dispose();
-    _motherController.dispose();
     _addressController.dispose();
     super.dispose();
   }
@@ -179,18 +174,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 16),
                 _plainField(
-                  _fatherController,
-                  'Father\'s Name',
-                  Icons.person_outline,
-                ),
-                const SizedBox(height: 16),
-                _plainField(
-                  _motherController,
-                  'Mother\'s Name',
-                  Icons.person_outline,
-                ),
-                const SizedBox(height: 16),
-                _plainField(
                   _addressController,
                   'Address',
                   Icons.home_outlined,
@@ -203,12 +186,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   label: 'NID Front',
                   file: _nidFront,
                   onTap: () => _pickImage((f) => _nidFront = f),
-                ),
-                const SizedBox(height: 16),
-                _imageTile(
-                  label: 'NID Back',
-                  file: _nidBack,
-                  onTap: () => _pickImage((f) => _nidBack = f),
                 ),
                 const SizedBox(height: 16),
                 _imageTile(
@@ -361,8 +338,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
   /// ---------------- Submit ----------------
   void _handleRegister() async {
+    debugPrint('Registering user...');
+    debugPrint('Username: ${_usernameController.text}');
+    debugPrint('Email: ${_emailController.text}');
+    debugPrint('Password: ${_passwordController.text}');
+    debugPrint('Confirm Password: ${_confirmController.text}');
+    debugPrint('Date of Birth: ${_dobController.text}');
+    debugPrint('NID Number: ${_nidNumberController.text}');
+    debugPrint('Address: ${_addressController.text}');
+    debugPrint('Phone: ${_phoneController.text}');
+    debugPrint('NID Front: ${_nidFront?.path}');
+    debugPrint('Selfie: ${_selfie?.path}');
+    debugPrint('First Name: ${_firstnameController.text}');
+    debugPrint('Last Name: ${_lastnameController.text}');
+
     if (_formKey.currentState?.validate() ?? false) {
-      if (_nidFront == null || _nidBack == null || _selfie == null) {
+      if (_nidFront == null || _selfie == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please capture all required images')),
         );
@@ -380,11 +371,8 @@ class _RegisterPageState extends State<RegisterPage> {
           phone: _phoneController.text.trim(),
           dob: DateFormat('yyyy-MM-dd').format(_selectedDob!), // convert format
           nidNumber: _nidNumberController.text.trim(),
-          father: _fatherController.text.trim(),
-          mother: _motherController.text.trim(),
           address: _addressController.text.trim(),
           nidFront: File(_nidFront!.path),
-          nidBack: File(_nidBack!.path),
           selfie: File(_selfie!.path),
           password: _passwordController.text.trim(),
         );

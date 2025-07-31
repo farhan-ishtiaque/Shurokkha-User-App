@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:shurokkha_app/Settings/change_personal_info.dart';
 import 'package:shurokkha_app/Settings/update_emergency_info.dart';
 import 'package:shurokkha_app/Settings/set_home_address.dart';
+import 'package:shurokkha_app/Settings/profile_page.dart';
+import 'package:shurokkha_app/login_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shurokkha_app/Api_Services/api_service.dart';
+import 'package:shurokkha_app/Emergency_Forms/fire_service_form.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -20,6 +24,22 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   bool isSettingsExpanded = false;
+  Map<String, dynamic>? _profile;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final profile = await getUserProfile();
+    setState(() {
+      _profile = profile;
+      _loading = false;
+    });
+  }
 
   void _callOperator() async {
     final Uri url = Uri(scheme: 'tel', path: '999');
@@ -73,34 +93,46 @@ class _HomepageState extends State<Homepage> {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage: AssetImage(
-                      'assets/images/profile_pic.jpeg',
-                    ),
-                    backgroundColor: Colors.white,
+                    backgroundImage:
+                        _profile != null && _profile!['selfie_image'] != null
+                        ? NetworkImage('$baseUrl${_profile!['selfie_image']}')
+                        : const AssetImage('assets/profile_pic.png')
+                              as ImageProvider,
                   ),
+
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Username: farhan123',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          'Name: Farhan',
-                          style: TextStyle(color: Colors.white, fontSize: 14),
-                        ),
-                        Text(
-                          'Email: farhan@gmail.com',
-                          style: TextStyle(color: Colors.white, fontSize: 14),
-                        ),
-                      ],
+                      children: _loading || _profile == null
+                          ? [CircularProgressIndicator(color: Colors.white)]
+                          : [
+                              Text(
+                                '${_profile!['username'] ?? ''}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
+                              Text(
+                                '${_profile!['first_name'] ?? ''} ${_profile!['last_name'] ?? ''}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                '${_profile!['email'] ?? ''}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                     ),
                   ),
                 ],
@@ -109,7 +141,12 @@ class _HomepageState extends State<Homepage> {
             ListTile(
               leading: const Icon(Icons.person_2, color: Colors.black),
               title: const Text('Profile'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              },
             ),
             ExpansionTile(
               leading: const Icon(Icons.settings, color: Colors.black),
@@ -128,10 +165,7 @@ class _HomepageState extends State<Homepage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChangePersonalInfoScreen(
-                          currentPhone: '01700000000',
-                          currentEmail: 'farhan@gmail.com',
-                        ),
+                        builder: (context) => ChangePersonalInfoScreen(),
                       ),
                     );
                   },
@@ -163,10 +197,7 @@ class _HomepageState extends State<Homepage> {
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                debugPrint('Logout tapped');
-              },
+              onTap: () => _performLogout(context),
             ),
           ],
         ),
@@ -193,6 +224,27 @@ class _HomepageState extends State<Homepage> {
               debugPrint('Tapped: ${item['title']}');
               if (item['title'] == 'Contact Operator') {
                 _callOperator();
+              } else if (item['title'] == 'Police') {
+                /*Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FireServiceRequestScreen(),
+                  ),
+                );*/
+              } else if (item['title'] == 'FireService') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FireServiceRequestScreen(),
+                  ),
+                );
+              } else if (item['title'] == 'Medical') {
+                /*Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MedicalServiceRequestScreen(),
+                  ),
+                );*/
               }
             },
             child: Card(
@@ -226,4 +278,12 @@ class _HomepageState extends State<Homepage> {
       ),
     );
   }
+}
+
+void _performLogout(BuildContext context) async {
+  await logoutUser();
+  Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute(builder: (context) => const LoginPage()),
+    (Route<dynamic> route) => false,
+  );
 }

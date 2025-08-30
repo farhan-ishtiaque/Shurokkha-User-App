@@ -17,23 +17,26 @@ class _LoginPageState extends State<LoginPage> {
 
   void _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final username = _userIdController.text.trim();
+      final username = _userIdController.text.trim(); // ✅ FIXED: Use username
       final password = _passwordController.text;
 
-      final success = await loginUser(username, password);
+      // ✅ FIXED: Use original loginUser function from api_service.dart
+      final response = await loginUser(username, password);
 
-      if (success) {
+      if (response['success'] == true) {
         // Navigate to home or dashboard
         if (!mounted) return;
         Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(builder: (context) => const Homepage()),
-
-        ); // or your actual screen
+          context,
+          MaterialPageRoute(builder: (context) => const Homepage()),
+        );
       } else {
-        // Show error
+        // Show error from response
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid username or password')),
+          SnackBar(
+            content: Text(response['error'] ?? 'Login failed'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -75,29 +78,36 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 15),
               // Logo
               Center(
-                child: Image.asset(
-                  'assets/images/shurokkha_logo.png',
-                  width: 320,
-                  height: 320,
-                  fit: BoxFit.contain,
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxWidth: 280,
+                    maxHeight: 280,
+                  ),
+                  child: Image.asset(
+                    'assets/images/shurokkha_logo.png',
+                    width: double.infinity,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(height: 30),
-              // Numeric User Name field
+              // Username field
               TextFormField(
                 controller: _userIdController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'User Name',
-                  prefixIcon: Icon(Icons.person_3_outlined),
+                  labelText: 'Username',
+                  prefixIcon: Icon(Icons.person),
+                  hintText: 'Enter your username',
                 ),
+                keyboardType: TextInputType.text,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your User Name';
+                    return 'Please enter your username';
                   }
                   int usernameLength = value.length;
                   if (usernameLength < 6) {
-                    return 'User Name invalid! Must be at least 6 characters';
+                    return 'Username must be at least 6 characters';
                   }
                   return null;
                 },

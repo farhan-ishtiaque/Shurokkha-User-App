@@ -14,7 +14,10 @@
     <application
         android:label="shurokkha_app"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true">
 
         <meta-data
             android:name="io.flutter.embedding.android.NormalTheme"
@@ -24,6 +27,11 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCVPR4ZURbUniQEPYKoreVAbj0-6QmNzk0" />
+
+        <!-- ✅ Google Maps Configuration -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <activity
             android:name=".MainActivity"

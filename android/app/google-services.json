@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "989370344793",
+    "project_id": "shurokka-new",
+    "storage_bucket": "shurokka-new.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989370344793:android:cbc2ab3bce6a0441921848",
+        "android_client_info": {
+          "package_name": "com.Shurokkha.shurokkha_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6t2oAbdDGVjNA64s1AKlezjrxJsmjUHQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989370344793:android:d2694e67f3f62656921848",
+        "android_client_info": {
+          "package_name": "com.example.shurokkha_emergency_unit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6t2oAbdDGVjNA64s1AKlezjrxJsmjUHQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

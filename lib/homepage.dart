@@ -6,7 +6,11 @@ import 'package:shurokkha_app/Settings/profile_page.dart';
 import 'package:shurokkha_app/login_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shurokkha_app/Api_Services/api_service.dart';
-import 'package:shurokkha_app/Emergency_Forms/fire_service_form.dart';
+import 'package:shurokkha_app/Homepage_cards/fire_service_form.dart';
+import 'package:shurokkha_app/Homepage_cards/cases_screen.dart';
+import 'package:shurokkha_app/Homepage_cards/emergency_button.dart';
+import 'package:shurokkha_app/Homepage_cards/medical_service_form.dart';
+import 'package:shurokkha_app/Homepage_cards/police_service_form.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -16,6 +20,7 @@ class Homepage extends StatefulWidget {
     {'title': 'FireService', 'image': 'assets/images/firedept_logo.png'},
     {'title': 'Medical', 'image': 'assets/images/medical_logo.png'},
     {'title': 'Contact Operator', 'image': 'assets/images/operator.png'},
+    {'title': 'Cases', 'image': 'assets/images/active_cases.png'},
   ];
 
   @override
@@ -66,12 +71,12 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Homepage',
+          'SHUROKKHA',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         titleSpacing: 10,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        foregroundColor: const Color.fromARGB(255, 166, 38, 80),
         centerTitle: true,
         elevation: 4,
         shadowColor: Colors.grey,
@@ -106,7 +111,11 @@ class _HomepageState extends State<Homepage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: _loading || _profile == null
-                          ? [CircularProgressIndicator(color: Colors.white)]
+                          ? [
+                              const CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ]
                           : [
                               Text(
                                 '${_profile!['username'] ?? ''}',
@@ -115,6 +124,8 @@ class _HomepageState extends State<Homepage> {
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                               Text(
                                 '${_profile!['first_name'] ?? ''} ${_profile!['last_name'] ?? ''}',
@@ -123,6 +134,8 @@ class _HomepageState extends State<Homepage> {
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                               Text(
                                 '${_profile!['email'] ?? ''}',
@@ -131,6 +144,8 @@ class _HomepageState extends State<Homepage> {
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ],
                     ),
@@ -203,7 +218,7 @@ class _HomepageState extends State<Homepage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => debugPrint('Floating Action Button Pressed'),
+        onPressed: () => _tappedEmergencyButton(context),
         backgroundColor: const Color.fromARGB(255, 255, 0, 85),
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
@@ -216,6 +231,7 @@ class _HomepageState extends State<Homepage> {
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         padding: const EdgeInsets.all(16),
+        childAspectRatio: 1.1, // Increase height to accommodate content
         children: List.generate(Homepage._cardItems.length, (index) {
           final item = Homepage._cardItems[index];
           return InkWell(
@@ -225,12 +241,12 @@ class _HomepageState extends State<Homepage> {
               if (item['title'] == 'Contact Operator') {
                 _callOperator();
               } else if (item['title'] == 'Police') {
-                /*Navigator.push(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => FireServiceRequestScreen(),
+                    builder: (context) => PoliceServiceRequestScreen(),
                   ),
-                );*/
+                );
               } else if (item['title'] == 'FireService') {
                 Navigator.push(
                   context,
@@ -239,12 +255,17 @@ class _HomepageState extends State<Homepage> {
                   ),
                 );
               } else if (item['title'] == 'Medical') {
-                /*Navigator.push(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => MedicalServiceRequestScreen(),
                   ),
-                );*/
+                );
+              } else if (item['title'] == 'Cases') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CasesScreen()),
+                );
               }
             },
             child: Card(
@@ -253,24 +274,32 @@ class _HomepageState extends State<Homepage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    item['image']!,
-                    width: 140,
-                    height: 140,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item['title']!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Image.asset(
+                        item['image']!,
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      item['title']!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -285,5 +314,13 @@ void _performLogout(BuildContext context) async {
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(builder: (context) => const LoginPage()),
     (Route<dynamic> route) => false,
+  );
+}
+
+void _tappedEmergencyButton(BuildContext context) {
+  debugPrint('Emergency Button Tapped');
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => EmergencyButtonPage()),
   );
 }

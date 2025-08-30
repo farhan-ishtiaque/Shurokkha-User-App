@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shurokkha_app/login_page.dart';
+import 'widgets/enhanced_address_picker.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -15,6 +16,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _picker = ImagePicker();
+  double? _selectedLat;
+  double? _selectedLng;
 
   // Text controllers
   final _emailController = TextEditingController();
@@ -150,17 +153,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 16),
                 _nameField(_lastnameController, 'Last Name'),
                 const SizedBox(height: 16),
-                _nameField(
-                  _usernameController,
-                  'Username',
-                  error: 'Please enter a username',
-                ),
+                _usernameField(),
                 const SizedBox(height: 16),
-                _plainField(
-                  _phoneController,
-                  'Phone Number',
-                  Icons.phone_outlined,
-                ),
+                _phoneField(),
                 const SizedBox(height: 16),
                 _emailField(),
                 const SizedBox(height: 16),
@@ -178,6 +173,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   'Address',
                   Icons.home_outlined,
                   maxLines: 2,
+                ),
+                const SizedBox(height: 8),
+                EnhancedAddressPicker(
+                  addressController: _addressController,
+                  onAddressChanged: (address, lat, lng) {
+                    setState(() {
+                      _selectedLat = lat;
+                      _selectedLng = lng;
+                    });
+                  },
                 ),
                 const SizedBox(height: 16),
 
@@ -245,6 +250,46 @@ class _RegisterPageState extends State<RegisterPage> {
             ? (error ?? 'Please enter $label')
             : null,
       );
+
+  Widget _usernameField() => TextFormField(
+    controller: _usernameController,
+    decoration: const InputDecoration(
+      border: OutlineInputBorder(),
+      labelText: 'Username',
+      prefixIcon: Icon(Icons.person_outline),
+    ),
+    validator: (v) {
+      if (v == null || v.trim().isEmpty) {
+        return 'Please enter a username';
+      }
+      if (v.trim().length < 6) {
+        return 'Username must be at least 6 characters';
+      }
+      return null;
+    },
+  );
+
+  Widget _phoneField() => TextFormField(
+    controller: _phoneController,
+    keyboardType: TextInputType.phone,
+    decoration: const InputDecoration(
+      border: OutlineInputBorder(),
+      labelText: 'Phone Number',
+      prefixIcon: Icon(Icons.phone_outlined),
+      hintText: '01XXXXXXXXX',
+    ),
+    validator: (v) {
+      if (v == null || v.trim().isEmpty) {
+        return 'Please enter your phone number';
+      }
+      // Bangladeshi phone number validation
+      final phoneRegex = RegExp(r'^01[3-9]\d{8}$');
+      if (!phoneRegex.hasMatch(v.trim())) {
+        return 'Enter a valid Bangladeshi phone number (01XXXXXXXXX)';
+      }
+      return null;
+    },
+  );
 
   Widget _plainField(
     TextEditingController c,
@@ -338,60 +383,111 @@ class _RegisterPageState extends State<RegisterPage> {
 
   /// ---------------- Submit ----------------
   void _handleRegister() async {
-    debugPrint('Registering user...');
-    debugPrint('Username: ${_usernameController.text}');
-    debugPrint('Email: ${_emailController.text}');
-    debugPrint('Password: ${_passwordController.text}');
-    debugPrint('Confirm Password: ${_confirmController.text}');
-    debugPrint('Date of Birth: ${_dobController.text}');
-    debugPrint('NID Number: ${_nidNumberController.text}');
-    debugPrint('Address: ${_addressController.text}');
-    debugPrint('Phone: ${_phoneController.text}');
-    debugPrint('NID Front: ${_nidFront?.path}');
-    debugPrint('Selfie: ${_selfie?.path}');
-    debugPrint('First Name: ${_firstnameController.text}');
-    debugPrint('Last Name: ${_lastnameController.text}');
+    debugPrint('🔵 Register button tapped!');
+    debugPrint('📝 Form validation starting...');
 
-    if (_formKey.currentState?.validate() ?? false) {
-      if (_nidFront == null || _selfie == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please capture all required images')),
-        );
-        return;
-      }
+    // Check form validation first
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      debugPrint('❌ Form validation failed');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all required fields correctly'),
+        ),
+      );
+      return;
+    }
 
-      _formKey.currentState?.save();
+    debugPrint('✅ Form validation passed');
 
-      try {
-        await registerUser(
-          firstName: _firstnameController.text.trim(),
-          lastName: _lastnameController.text.trim(),
-          username: _usernameController.text.trim(),
-          email: _emailController.text.trim(),
-          phone: _phoneController.text.trim(),
-          dob: DateFormat('yyyy-MM-dd').format(_selectedDob!), // convert format
-          nidNumber: _nidNumberController.text.trim(),
-          address: _addressController.text.trim(),
-          nidFront: File(_nidFront!.path),
-          selfie: File(_selfie!.path),
-          password: _passwordController.text.trim(),
-        );
+    // Check required images
+    if (_nidFront == null || _selfie == null) {
+      debugPrint('❌ Missing required images');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please capture all required images')),
+      );
+      return;
+    }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful!')),
-        );
+    debugPrint('✅ Images validation passed');
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-        );
+    // Check location coordinates
+    if (_selectedLat == null || _selectedLng == null) {
+      debugPrint('❌ Missing location coordinates');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please wait for location to be detected'),
+        ),
+      );
+      return;
+    }
 
-        // Optionally navigate to another page
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
-      }
+    debugPrint('✅ Location validation passed');
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    debugPrint('🚀 Starting API call...');
+    debugPrint('👤 Registration Data:');
+    debugPrint('  First Name: ${_firstnameController.text.trim()}');
+    debugPrint('  Last Name: ${_lastnameController.text.trim()}');
+    debugPrint('  Username: ${_usernameController.text.trim()}');
+    debugPrint('  Email: ${_emailController.text.trim()}');
+    debugPrint('  Phone: ${_phoneController.text.trim()}');
+    debugPrint('  DOB: ${DateFormat('yyyy-MM-dd').format(_selectedDob!)}');
+    debugPrint('  NID: ${_nidNumberController.text.trim()}');
+    debugPrint('  Address: ${_addressController.text.trim()}');
+    debugPrint('  Lat: $_selectedLat, Lng: $_selectedLng');
+    debugPrint('  NID Front: ${_nidFront?.path}');
+    debugPrint('  Selfie: ${_selfie?.path}');
+
+    try {
+      await registerUser(
+        firstName: _firstnameController.text.trim(),
+        lastName: _lastnameController.text.trim(),
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+        dob: DateFormat('yyyy-MM-dd').format(_selectedDob!),
+        nidNumber: _nidNumberController.text.trim(),
+        address: _addressController.text.trim(),
+        latitude: _selectedLat!,
+        longitude: _selectedLng!,
+        nidFront: File(_nidFront!.path),
+        selfie: File(_selfie!.path),
+        password: _passwordController.text.trim(),
+      );
+
+      // Dismiss loading dialog
+      Navigator.of(context).pop();
+
+      debugPrint('✅ Registration successful!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registration successful!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate to login page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    } catch (e) {
+      // Dismiss loading dialog
+      Navigator.of(context).pop();
+
+      debugPrint('❌ Registration failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registration failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

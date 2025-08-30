@@ -24,10 +24,8 @@ class PoliceApiService {
     if (token == null) {
       throw Exception('No authentication token found');
     }
-    
-    return {
-      'Authorization': 'Token $token',
-    };
+
+    return {'Authorization': 'Token $token'};
   }
 
   /// Submit police report - POST /api/users/emergency/submit-police-report/
@@ -51,7 +49,9 @@ class PoliceApiService {
         await _validateMediaFile(media);
       }
 
-      final uri = Uri.parse('$baseUrl/api/users/emergency/submit-police-report/');
+      final uri = Uri.parse(
+        '$baseUrl/api/users/emergency/submit-police-report/',
+      );
       final headers = await _getAuthHeaders();
 
       final request = http.MultipartRequest('POST', uri)
@@ -64,7 +64,9 @@ class PoliceApiService {
 
       // Add single media file if provided
       if (media != null) {
-        request.files.add(await http.MultipartFile.fromPath('media', media.path));
+        request.files.add(
+          await http.MultipartFile.fromPath('media', media.path),
+        );
       }
 
       print(' Sending request to: ${uri.toString()}');
@@ -77,10 +79,10 @@ class PoliceApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonData = json.decode(response.body) as Map<String, dynamic>;
         final submitResponse = PoliceSubmitResponse.fromJson(jsonData);
-      
+
         print(' Police report submitted successfully');
         print(' Report ID: ${submitResponse.reportId}');
-        
+
         return submitResponse;
       } else {
         // Handle backend error response
@@ -99,23 +101,31 @@ class PoliceApiService {
   }
 
   /// Get police report status - GET /api/users/emergency/report-status/{report_id}/
-  static Future<PoliceStatusResponse> getPoliceReportStatus(int reportId) async {
+  static Future<PoliceStatusResponse> getPoliceReportStatus(
+    int reportId,
+  ) async {
     try {
       print(' Getting status for report ID: $reportId');
 
-      final uri = Uri.parse('$baseUrl/api/users/emergency/report-status/$reportId/');
+      final uri = Uri.parse(
+        '$baseUrl/api/users/emergency/report-status/$reportId/',
+      );
       final headers = await _getAuthHeaders();
 
-      final response = await _client.get(uri, headers: headers).timeout(_timeout);
+      final response = await _client
+          .get(uri, headers: headers)
+          .timeout(_timeout);
 
       print(' Response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body) as Map<String, dynamic>;
         final statusResponse = PoliceStatusResponse.fromJson(jsonData);
-        
-        print(' Status retrieved successfully: ${statusResponse.status.displayLabel}');
-        
+
+        print(
+          ' Status retrieved successfully: ${statusResponse.status.displayLabel}',
+        );
+
         return statusResponse;
       } else if (response.statusCode == 404) {
         throw Exception('Report not found');
@@ -143,20 +153,22 @@ class PoliceApiService {
       final uri = Uri.parse('$baseUrl/api/users/emergency/user-reports/');
       final headers = await _getAuthHeaders();
 
-      final response = await _client.get(uri, headers: headers).timeout(_timeout);
+      final response = await _client
+          .get(uri, headers: headers)
+          .timeout(_timeout);
 
       print(' Response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body) as Map<String, dynamic>;
         final listResponse = PoliceReportsListResponse.fromJson(jsonData);
-        
+
         // Sort by timestamp descending (newest first) client-side
         final sortedReports = List<PoliceReportItem>.from(listResponse.reports)
           ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        
+
         print(' Retrieved ${sortedReports.length} police reports');
-        
+
         return sortedReports;
       } else {
         try {
@@ -183,7 +195,7 @@ class PoliceApiService {
     // Check file size (max 10MB)
     final fileSize = await media.length();
     const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    
+
     if (fileSize > maxSize) {
       throw Exception('Media file too large. Maximum size is 10MB');
     }
@@ -191,12 +203,14 @@ class PoliceApiService {
     // Check file extension
     final extension = media.path.split('.').last.toLowerCase();
     const allowedExtensions = ['jpg', 'jpeg', 'png', 'mp4'];
-    
+
     if (!allowedExtensions.contains(extension)) {
       throw Exception('Invalid file type. Allowed: JPG, PNG, MP4');
     }
 
-    print(' Media file validated: ${(fileSize / 1024 / 1024).toStringAsFixed(1)}MB, type: $extension');
+    print(
+      ' Media file validated: ${(fileSize / 1024 / 1024).toStringAsFixed(1)}MB, type: $extension',
+    );
   }
 
   /// Test API connectivity
@@ -204,10 +218,13 @@ class PoliceApiService {
     try {
       final uri = Uri.parse('$baseUrl/api/users/emergency/user-reports/');
       final headers = await _getAuthHeaders();
-      
-      final response = await _client.get(uri, headers: headers).timeout(_timeout);
-      
-      return response.statusCode == 200 || response.statusCode == 401; // 401 means server is reachable
+
+      final response = await _client
+          .get(uri, headers: headers)
+          .timeout(_timeout);
+
+      return response.statusCode == 200 ||
+          response.statusCode == 401; // 401 means server is reachable
     } catch (e) {
       print(' Connection test failed: $e');
       return false;
